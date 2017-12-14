@@ -10,8 +10,8 @@
 ###
 
 #Create arrays for our source IPs
-mapfile -t trans < <(cat /home/ec2-user/scripts/s1-trans.txt)
-mapfile -t admin < <(cat /home/ec2-user/scripts/s1-admin.txt)
+mapfile -t trans < <(cat /home/user/scripts/s1-trans.txt)
+mapfile -t admin < <(cat /home/user/scripts/s1-admin.txt)
 
 #Source Array debug break
 #echo "tarray"
@@ -22,10 +22,10 @@ mapfile -t admin < <(cat /home/ec2-user/scripts/s1-admin.txt)
 #fi
 
 #Get the count of sessions files per machine, arrayed by stack
-mapfile -t tcount < <(for e in ${trans[@]}; do ssh -i /home/ec2-user/.ssh/s1-app-prod-v2.pem root@$e 'ls -h1 /var/lib/php5/sessions| wc -l'; done)
-mapfile -t acount < <(for e in ${admin[@]}; do ssh -i /home/ec2-user/.ssh/s1-app-prod-v2.pem root@$e 'ls -h1 /var/lib/php5/sessions| wc -l'; done)
-mapfile -t tsize < <(for e in ${trans[@]}; do ssh -i /home/ec2-user/.ssh/s1-app-prod-v2.pem root@$e 'du -sh /var/lib/php5/sessions | tr "\t" " " | tr "/" " "' | tr -d "M" | awk '{print $1}'; done)
-mapfile -t asize < <(for e in ${admin[@]}; do ssh -i /home/ec2-user/.ssh/s1-app-prod-v2.pem root@$e 'du -sh /var/lib/php5/sessions | tr "\t" " " | tr "/" " "' | tr -d "M" | awk '{print $1}'; done)
+mapfile -t tcount < <(for e in ${trans[@]}; do ssh -i /home/user/.ssh/.pem root@$e 'ls -h1 /var/lib/php5/sessions| wc -l'; done)
+mapfile -t acount < <(for e in ${admin[@]}; do ssh -i /home/user/.ssh/.pem root@$e 'ls -h1 /var/lib/php5/sessions| wc -l'; done)
+mapfile -t tsize < <(for e in ${trans[@]}; do ssh -i /home/user/.ssh/.pem root@$e 'du -sh /var/lib/php5/sessions | tr "\t" " " | tr "/" " "' | tr -d "M" | awk '{print $1}'; done)
+mapfile -t asize < <(for e in ${admin[@]}; do ssh -i /home/user/.ssh/.pem root@$e 'du -sh /var/lib/php5/sessions | tr "\t" " " | tr "/" " "' | tr -d "M" | awk '{print $1}'; done)
 
 #Average (mean) of our counts
 IFS='+' tcavg=$(echo "scale=1;(${tcount[*]})/${#tcount[@]}"|bc)

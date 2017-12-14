@@ -6,7 +6,7 @@
 FLAG="/usr/local/src/hostname.flag"
 
 #get the IP
-IP=$(ip addr show eth0 | grep inet[^0-9] | awk '{print $2}' | cut -d'/' -s -f1)
+IP=$(ip addr show eth0 | grep inet[^0-9] | awk '{print $2}' | cut -d'/' -s -f1 | tr "." "-")
 
 #Set the hostname Variable
 HOSTNAME=ip-$IP
