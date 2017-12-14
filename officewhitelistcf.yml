@@ -1,0 +1,100 @@
+---
+Parameters:
+  Environment:
+    Type: String
+    Description: Which VPC environment to launch ECS cluster in
+    Default: dev
+    AllowedValues:
+    - dev
+    - prod
+    - int
+    - pre
+    - s1
+
+Resources:
+  OfficeWhitelistSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Internal Office Whitelist Security Group
+      VpcId:
+        Fn::ImportValue: !Sub "vpc-${Environment}-VpcId"
+      Tags:
+        - Key: Name
+          Value:
+            Ref: AWS::StackName
+        - Key: st:owner
+          Value: Backoffice
+        - Key: st:application
+          Value: ECS
+        - Key: st:environment
+          Value: !Ref Environment
+
+  OfficeWhitelistIngress1:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      CidrIp: 216.52.176.0/20
+      FromPort: 443
+      IpProtocol: tcp
+      ToPort: 443
+      GroupId: !Ref OfficeWhitelistSecurityGroup
+
+  OfficeWhitelistIngress2:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      CidrIp: 10.0.0.0/8
+      FromPort: 443
+      IpProtocol: tcp
+      ToPort: 443
+      GroupId: !Ref OfficeWhitelistSecurityGroup
+
+  OfficeWhitelistIngress3:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      CidrIp: 144.202.243.12/32
+      FromPort: 443
+      IpProtocol: tcp
+      ToPort: 443
+      GroupId: !Ref OfficeWhitelistSecurityGroup
+
+  OfficeWhitelistIngress4:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      CidrIp: 108.171.130.167/32
+      FromPort: 443
+      IpProtocol: tcp
+      ToPort: 443
+      GroupId: !Ref OfficeWhitelistSecurityGroup
+
+  OfficeWhitelistIngress5:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      CidrIp: 50.235.124.155/32
+      FromPort: 443
+      IpProtocol: tcp
+      ToPort: 443
+      GroupId: !Ref OfficeWhitelistSecurityGroup
+
+  OfficeWhitelistIngress6:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      CidrIp: 24.30.46.155/32
+      FromPort: 443
+      IpProtocol: tcp
+      ToPort: 443
+      GroupId: !Ref OfficeWhitelistSecurityGroup
+
+  OfficeWhitelistIngress7:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      CidrIp: 144.202.243.12/32
+      FromPort: 443
+      IpProtocol: tcp
+      ToPort: 443
+      GroupId: !Ref OfficeWhitelistSecurityGroup
+
+Outputs:
+  OfficeWhitelistSecurityGroup:
+    Value:
+      Ref: OfficeWhitelistSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-office-whitelist"

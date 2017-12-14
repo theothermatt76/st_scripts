@@ -1,0 +1,7 @@
+
+service splunk stop
+rm /opt/splunkforwarder/etc/system/local/server.conf
+rm /opt/splunkforwarder/etc/system/local/inputs.conf
+touch /opt/splunkforwarder/ftr
+rm /opt/splunkforwarder/etc/myinstall/splunkd.xml
+/opt/splunkforwarder/bin/splunk start --no-prompt --accept-license

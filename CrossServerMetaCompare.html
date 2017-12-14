@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<TITLE>Cross-server components comparison, script generator</TITLE>
+	<META NAME="Generator" CONTENT="EditPlus">
+	<META NAME="Author" CONTENT="Peer S. Winter">
+	<style>
+		H4 {text-decoration: underline; cursor: pointer;}
+		p.SQL {font-family: Courier New; font-size: smaller;}
+		p.pw {font-size: smaller; text-align: right;}
+		p.options {font-size: normal;}
+	</style>
+	<script>
+		function showSQL(task) {
+			var filename = 'dummy';
+			/* connection vars */
+			var conn1st = document.getElementsByName('conn1st')[0].value.replace(/^\s+|\s+$/g,'');
+			var conn2nd = document.getElementsByName('conn2nd')[0].value.replace(/^\s+|\s+$/g,'');
+			var noschemata = document.getElementsByName('noschemata')[0].value.replace(/^\s+|\s+$/g,'');
+			/* database level vars */
+			var schemaCollation = "";
+			if(document.getElementsByName('schemacollation')[0].checked) {schemaCollation = ", DEFAULT_COLLATION_NAME"};
+			var schemaCharset = "";
+			if(document.getElementsByName('schemacharset')[0].checked) {schemaCharset = ", DEFAULT_CHARACTER_SET_NAME"};
+			/* table level vars */
+			var tableType = ", TABLE_TYPE";
+			var tableTypeWhere = "";
+			if(document.getElementsByName('tablesonly')[0].checked) {
+				tableType = "";
+				tableTypeWhere = " AND TABLE_TYPE = 'BASE TABLE'";
+				};
+			var engine = "";
+			if(document.getElementsByName('engine')[0].checked) {engine = ", ENGINE"};
+			var tableCollation = "";
+			if(document.getElementsByName('tablecollation')[0].checked) {tableCollation = ", TABLE_COLLATION"};
+			var checksum = "";
+			if(document.getElementsByName('checkum')[0].checked) {checksum = ", CHECKSUM"};
+			var createOptions = "";
+			if(document.getElementsByName('createoptions')[0].checked) {createOptions = ", CREATE_OPTIONS"};
+			var tableComment = "";
+			if(document.getElementsByName('tablecomment')[0].checked) {tableComment = ", TABLE_COMMENT"};
+			/* column level vars */
+			var columnDefault = '';
+			if(document.getElementsByName('defaultvalue')[0].checked) {columnDefault = ", COLUMN_DEFAULT"};
+			var isNullable = '';
+			if(document.getElementsByName('nullable')[0].checked) {isNullable = ", IS_NULLABLE"};
+			var columnCollation = '';
+			if(document.getElementsByName('columncollation')[0].checked) {columnCollation = ", COLLATION_NAME"};
+			var columnType = '';
+			if(document.getElementsByName('columntype')[0].checked) {columnType = ", COLUMN_TYPE"};
+			var extra = '';
+			if(document.getElementsByName('extra')[0].checked) {extra = ", EXTRA"};
+			var columnComment = '';
+			if(document.getElementsByName('columncomment')[0].checked) {columnComment = ", COLUMN_COMMENT"};
+			/* index specific vars */
+			var indexPK = "false";
+			if(document.getElementsByName('indexpk')[0].checked) {indexPK = "INDEX_NAME = 'PRIMARY'"};
+			var indexUK = "false";
+			if(document.getElementsByName('indexuk')[0].checked) {indexUK = "(INDEX_NAME <> 'PRIMARY' AND NON_UNIQUE = 0)"};
+			var indexOther = "false";
+			if(document.getElementsByName('indexother')[0].checked) {indexOther = "NON_UNIQUE = 1"};
+			/* view specific vars */
+			var viewDefinition = "";
+			if(document.getElementsByName('viewdefinition')[0].checked) {viewDefinition = ", VIEW_DEFINITION"};
+			var viewDefiner = "";
+			if(document.getElementsByName('viewdefiner')[0].checked) {viewDefiner = ", DEFINER"};
+			/* trigger specific vars */
+			var triggerStatement = "";
+			if(document.getElementsByName('triggerstatement')[0].checked) {triggerStatement = ", ACTION_STATEMENT"};
+			var triggerDefiner = "";
+			if(document.getElementsByName('triggerdefiner')[0].checked) {triggerDefiner = ", DEFINER"};
+			/* variable parameters */
+			var varLike = document.getElementsByName('varlike')[0].value.replace(/^\s+|\s+$/g,'');
+			var varNotLike = document.getElementsByName('varnotlike')[0].value.replace(/^\s+|\s+$/g,'');
+			/* start the logic */
+			var baseSQL = "SELECT 'No script defined';";
+			switch (task) {
+				case 0:
+					filename = 'schemata';
+					baseSQL = "<b>Commands to execute:</b><BR>echo -e " + '"' + "SELECT SCHEMA_NAME" + schemaCharset + schemaCollation + " FROM information_schema.SCHEMATA WHERE SCHEMA_NAME NOT IN (" + noschemata + ")";
+					break;
+				case 1:
+					filename = 'tables';
+					baseSQL = "<b>Commands to execute:</b><BR>echo -e " + '"' + "SELECT CONCAT_WS('.',TABLE_SCHEMA,TABLE_NAME)" + tableType + engine + tableCollation + checksum + createOptions + tableComment + " FROM information_schema.TABLES WHERE TABLE_SCHEMA NOT IN (" + noschemata + ")" + tableTypeWhere;
+					break;
+				case 2:
+					filename = 'columns';
+					baseSQL = "<b>Commands to execute:</b><BR>echo -e " + '"' + "SELECT CONCAT_WS('.',TABLE_SCHEMA,TABLE_NAME,COLUMN_NAME)" + columnDefault + isNullable + columnCollation + columnType + extra + columnComment + " FROM information_schema.COLUMNS WHERE TABLE_SCHEMA NOT IN (" + noschemata + ")";
+					break;
+				case 3:
+					filename = 'indexes';
+					baseSQL = "<b>Commands to execute:</b><BR>echo -e " + '"' + "SELECT CONCAT_WS('.',TABLE_SCHEMA,TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX), COLUMN_NAME, IF(NON_UNIQUE,'Non-Unique','Unique'), INDEX_TYPE, IF(NULLABLE,'Nullable','Non-Nullable'), COLLATION FROM information_schema.STATISTICS WHERE TABLE_SCHEMA NOT IN (" + noschemata + ") AND (" + indexPK + " OR " + indexUK + " OR  " + indexOther + ")";
+					break;
+				case 4:
+					filename = 'constraints';
+					baseSQL = "<b>Commands to execute:</b><BR>echo -e " + '"' + "SELECT CONCAT_WS('.',CONSTRAINT_SCHEMA,TABLE_NAME,CONSTRAINT_NAME), CONCAT_WS('.',UNIQUE_CONSTRAINT_SCHEMA,REFERENCED_TABLE_NAME,UNIQUE_CONSTRAINT_NAME), UPDATE_RULE, DELETE_RULE FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA NOT IN (" + noschemata + ")";
+					break;
+				case 5:
+					filename = 'views';
+					baseSQL = "<b>Commands to execute:</b><BR>echo -e " + '"' + "SELECT CONCAT_WS('.',TABLE_SCHEMA,TABLE_NAME)" + viewDefinition + viewDefiner + " FROM information_schema.VIEWS WHERE TABLE_SCHEMA NOT IN (" + noschemata + ")";
+					break;
+				case 6:
+					filename = 'triggers';
+					baseSQL = "<b>Commands to execute:</b><BR>echo -e " + '"' + "SELECT CONCAT_WS('.',EVENT_OBJECT_SCHEMA,EVENT_OBJECT_TABLE,TRIGGER_NAME), CONCAT_WS('.',ACTION_TIMING,EVENT_MANIPULATION)" + triggerStatement + triggerDefiner + " FROM information_schema.TRIGGERS WHERE EVENT_OBJECT_SCHEMA NOT IN (" + noschemata + ")";
+					break;
+				case 7:
+					filename = 'variables';
+					baseSQL = "<b>Commands to execute:</b><BR>echo -e " + '"' + "SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.SESSION_VARIABLES WHERE VARIABLE_NAME LIKE '" + varLike + "' AND VARIABLE_NAME NOT LIKE '" + varNotLike + "'";
+					break;
+				default:
+					baseSQL = '<b>The script is not implemented, ignore the output</b><BR>';
+					break;
+			} 
+			var theSQL = baseSQL + " ORDER BY 1" + '"' + " > runscript.sql<BR><BR>mysql " + conn1st + " < runscript.sql > " + filename + "1.tsv<BR><BR>mysql " + conn2nd + " < runscript.sql > " + filename + "2.tsv<BR><BR>vi -d -R " + filename + "1.tsv " + filename + "2.tsv";
+			document.getElementById('SQLcommands').innerHTML = theSQL;
+		}
+	</script>
+</HEAD>
+
+<BODY>
+<TABLE width=95%>
+<TR>
+	<TD>
+		<H2>Cross-server metadata comparison, script generator</H2>
+		<TABLE>
+		<TR>
+			<TD>Connection string to the first MySQL server:&nbsp;&nbsp;</TD>
+			<TD><INPUT TYPE="text" NAME="conn1st" VALUE="-h netmon.talentwisecorp.net -u -p --port 3306" SIZE="80"></TD>
+		</TR>
+		<TR>
+			<TD>Connection string to the second MySQL server:&nbsp;&nbsp;</TD>
+			<TD><INPUT TYPE="text" NAME="conn2nd" VALUE="-h netmon.talentwisecorp.net -u -p --port 3306" SIZE="80"></TD>
+		</TR>
+		<TR>
+			<TD>Schemata to ignore (in single quotes, comma separated):&nbsp;&nbsp;</TD>
+			<TD><INPUT TYPE="text" NAME="noschemata" VALUE="'mysql','information_schema','performance_schema','percona','Pythia'" SIZE="80"></TD>
+		</TR>
+		</TABLE>
+	</TD>
+	<TD><p class='pw'><img src="data:image/png;base64,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" ><BR>
+	There's no nut too hard to crack</p>
+	</TD>
+</TR>
+</TABLE>
+<p class='options'>
+<TABLE border=1 width=95%>
+<TR>
+	<TD width=30%>
+		<H4 onclick='showSQL(0)'><abbr title='The script shows discrepancies in schemata metadata'>Task 0: List Schemata</abbr></H4>
+		<TABLE width=100%>
+		<TR>
+			<TD><INPUT TYPE="checkbox" NAME="schemacharset">Default character set</TD>
+			<TD><INPUT TYPE="checkbox" NAME="schemacollation" checked>Default collation</TD>
+		</TR>
+		</TABLE>
+		<hr><H4 onclick='showSQL(1)'><abbr title='The script shows discrepancies in tables metadata.'>Task 1: List Tables</abbr></H4>
+		<TABLE width=100%>
+		<TR>
+			<TD><INPUT TYPE="checkbox" NAME="tablesonly" checked>Base tables only</TD>
+			<TD><INPUT TYPE="checkbox" NAME="engine" checked>Engine</TD>
+			<TD><INPUT TYPE="checkbox" NAME="checkum">Checksum</TD>
+		</TR>
+		<TR>
+			<TD><INPUT TYPE="checkbox" NAME="tablecollation" checked>Default collation</TD>
+			<TD><INPUT TYPE="checkbox" NAME="createoptions">Options</TD>
+			<TD><INPUT TYPE="checkbox" NAME="tablecomment">Comments</TD>
+		</TR>
+		</TABLE>
+		<hr><H4 onclick='showSQL(2)' ><abbr title='The script shows discrepancies in columns metadata.'>Task 2: List Columns</abbr></H4>
+		<TABLE width=100%>
+		<TR>
+			<TD><INPUT TYPE="checkbox" NAME="defaultvalue" checked>Default value</TD>
+			<TD><INPUT TYPE="checkbox" NAME="columntype" checked>Type</TD>
+			<TD><INPUT TYPE="checkbox" NAME="nullable" checked>Nullable</TD>
+		</TR>
+		<TR>
+			<TD><INPUT TYPE="checkbox" NAME="columncomment">Comments</TD>
+			<TD><INPUT TYPE="checkbox" NAME="extra">Extra</TD>
+			<TD><INPUT TYPE="checkbox" NAME="columncollation" checked>Collation</TD>
+		</TR>
+		</TABLE>
+		<hr><H4 onclick='showSQL(3)'><abbr title='The script shows discrepancies in indexes.'>Task 3: List indexes</abbr></H4>
+		<TABLE width=100%>
+		<TR>
+			<TD>Include:</TD>
+			<TD><INPUT TYPE="checkbox" NAME="indexpk" checked>PK</TD>
+			<TD><INPUT TYPE="checkbox" NAME="indexuk" checked>Non-PK unique</TD>
+			<TD><INPUT TYPE="checkbox" NAME="indexother" checked>Other</TD>
+		</TR>
+		</TABLE>
+		<hr><H4 onclick='showSQL(4)'><abbr title='The script shows discrepancies in referential contraints.'>Task 4: List referential constraints</abbr></H4>
+		<hr><H4 onclick='showSQL(5)'><abbr title='The script shows discrepancies in views.'>Task 5: List views</abbr></H4>
+		<TABLE width=100%>
+		<TR>
+			<TD><INPUT TYPE="checkbox" NAME="viewdefinition" checked>Definition</TD>
+			<TD><INPUT TYPE="checkbox" NAME="viewdefiner">Definer</TD>
+		</TR>
+		</TABLE>
+		<hr><H4 onclick='showSQL(6)'><abbr title='The script shows discrepancies in triggers.'>Task 6: List triggers</abbr></H4>
+		<TABLE width=100%>
+		<TR>
+			<TD><INPUT TYPE="checkbox" NAME="triggerstatement" checked>Statement</TD>
+			<TD><INPUT TYPE="checkbox" NAME="triggerdefiner">Definer</TD>
+		</TR>
+		</TABLE>
+		<hr><H4 onclick='showSQL(7)'><abbr title='The script shows discrepancies in current session variables.'>Task 7: List variables</abbr></H4>
+		<TABLE width=100%>
+		<TR>
+			<TD>Variable name like: </TD>
+			<TD><INPUT TYPE="text" NAME="varlike" VALUE="%" SIZE="20"></TD>
+		</TR>
+		<TR>
+			<TD>Variable name not like: </TD>
+			<TD><INPUT TYPE="text" NAME="varnotlike" VALUE="" SIZE="20"></TD>
+		</TR>
+		</TABLE>
+	</TD>
+	<TD valign=top >
+		<p id='SQLcommands' class='SQL'>&nbsp;&lt;&lt;&nbsp;Click on the task title<BR>Generated commands will be here</p>
+	</TD>
+</TR>
+</TABLE>
+</p>
+</BODY>
+</HTML>
